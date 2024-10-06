@@ -30,6 +30,6 @@ type BookUsecase interface {
 
 type BookRepository interface {
 	GetBySubject(ctx context.Context, req BookGetBySubjectRequest) (BookGetBySubjectResponse, error)
-	SaveCanBorrowBook(books []Book) error
-	GetCanBorrowBookByID(id string) (Book, error)
+	SaveCanBorrowBook(ctx context.Context, books []Book) error
+	GetCanBorrowBookByID(ctx context.Context, id string) (Book, error)
 }

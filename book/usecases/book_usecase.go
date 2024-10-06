@@ -26,7 +26,7 @@ func (bu *bookUsecase) GetBySubject(ctx context.Context, req domain.BookGetBySub
 
 	res, err = bu.bookRepository.GetBySubject(ctx, req)
 	if err != nil {
-		return res, err
+		return res, domain.ErrInternalServerError
 	}
 
 	// save book data if can_borrow true
@@ -38,10 +38,11 @@ func (bu *bookUsecase) GetBySubject(ctx context.Context, req domain.BookGetBySub
 	}
 
 	if len(canBorrowBook) != 0 {
-		err = bu.bookRepository.SaveCanBorrowBook(canBorrowBook)
-		// ignore error, only log
+		err = bu.bookRepository.SaveCanBorrowBook(ctx, canBorrowBook)
 		if err != nil {
+			// still return book list, but didn't save borrow book
 			log.Warnf("fail save can borrow book : %s", err.Error())
+			return res, nil
 		}
 	}
 

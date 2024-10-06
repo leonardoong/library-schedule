@@ -17,13 +17,14 @@ type bookRepository struct {
 }
 
 type openLibraryResponse struct {
-	WorkCount int `json:"work_count"`
+	WorkCount int64 `json:"work_count"`
 	Works     []struct {
-		Key          string `json:"key"`
-		Title        string `json:"title"`
-		EditionCount int    `json:"edition_count"`
-		CoverID      int    `json:"cover_id"`
-		Authors      []struct {
+		Key              string `json:"key"`
+		Title            string `json:"title"`
+		EditionCount     int64  `json:"edition_count"`
+		CoverID          int64  `json:"cover_id"`
+		FirstPublishYear int64  `json:"first_publish_year"`
+		Authors          []struct {
 			Name string `json:"name"`
 		} `json:"authors"`
 		Availability struct {
@@ -72,22 +73,23 @@ func (br *bookRepository) GetBySubject(ctx context.Context, req domain.BookGetBy
 		}
 
 		books = append(books, domain.Book{
-			ID:           work.Key,
-			Title:        work.Title,
-			Author:       authors,
-			EditionCount: int64(work.EditionCount),
-			CanBorrow:    work.Availability.AvailableToBorrow,
-			CoverImage:   coverImageURL,
+			ID:               work.Key,
+			Title:            work.Title,
+			Author:           authors,
+			EditionCount:     work.EditionCount,
+			FirstPublishYear: work.FirstPublishYear,
+			CanBorrow:        work.Availability.AvailableToBorrow,
+			CoverImage:       coverImageURL,
 		})
 	}
 
 	return domain.BookGetBySubjectResponse{
-		TotalBook: int64(result.WorkCount),
+		TotalBook: result.WorkCount,
 		Books:     books,
 	}, err
 }
 
-func (br *bookRepository) SaveCanBorrowBook(books []domain.Book) (err error) {
+func (br *bookRepository) SaveCanBorrowBook(ctx context.Context, books []domain.Book) (err error) {
 	br.mu.Lock()
 	defer br.mu.Unlock()
 
@@ -98,7 +100,7 @@ func (br *bookRepository) SaveCanBorrowBook(books []domain.Book) (err error) {
 	return
 }
 
-func (br *bookRepository) GetCanBorrowBookByID(id string) (res domain.Book, err error) {
+func (br *bookRepository) GetCanBorrowBookByID(ctx context.Context, id string) (res domain.Book, err error) {
 	br.mu.Lock()
 	defer br.mu.Unlock()
 
